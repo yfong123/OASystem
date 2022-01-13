@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gec.mapper.ProcessConfigMapper">
+
+	<select id="getProcConfigByCategory" resultType="ProcessConfig">
+		select * from t_proc_config c
+		where c.procCategory=#{category}
+		order by c.version desc
+		limit 0,1
+	</select>
+	
+	<insert id="addProcessConfig" parameterType="ProcessConfig">
+		insert into t_proc_config(
+			id,deplomentId,procDefId,version,procKey,procCategory,note,createDate )
+		values(
+			#{id},#{deplomentid}, #{procdefid}, #{version},#{prockey}, #{proccategory},
+			#{note}, now()		
+		)
+	</insert>
+	
+	<select id="getProcList" resultType="ProcessConfig">
+		select * from t_proc_config c
+		<where>
+			<if test="deploymentId!=null and deploymentId!='' ">
+				and c.deplomentId like "%"#{deploymentId}"%"
+			</if>
+			<if test="procCategory!=null and procCategory!='' ">
+				and c.procCategory = #{procCategory}
+			</if>
+		</where>
+		order by c.createDate desc
+		limit #{offset},#{limit}
+	</select>
+	
+	<select id="getProcCount" resultType="int">
+		select count(*) from t_proc_config c
+		<where>
+			<if test="deploymentId!=null and deploymentId!='' ">
+				and c.deplomentId like "%"#{deploymentId}"%"
+			</if>
+			<if test="procCategory!=null and procCategory!='' ">
+				and c.procCategory = #{procCategory}
+			</if>
+		</where>
+	</select>
+	
+  <resultMap id="BaseResultMap" type="com.gec.domain.ProcessConfig">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="deplomentId" jdbcType="VARCHAR" property="deplomentid" />
+    <result column="procDefId" jdbcType="VARCHAR" property="procdefid" />
+    <result column="procCategory" jdbcType="CHAR" property="proccategory" />
+    <result column="version" jdbcType="VARCHAR" property="version" />
+    <result column="procKey" jdbcType="VARCHAR" property="prockey" />
+    <result column="note" jdbcType="VARCHAR" property="note" />
+    <result column="createDate" jdbcType="TIMESTAMP" property="createdate" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, deplomentId, procDefId, procCategory, version, procKey, note, createDate
+  </sql>
+  <select id="selectByExample" parameterType="com.gec.domain.ProcessConfigExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from t_proc_config
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_proc_config
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_proc_config
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.gec.domain.ProcessConfigExample">
+    delete from t_proc_config
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.gec.domain.ProcessConfig">
+    insert into t_proc_config (id, deplomentId, procDefId, 
+      procCategory, version, procKey, 
+      note, createDate)
+    values (#{id,jdbcType=VARCHAR}, #{deplomentid,jdbcType=VARCHAR}, #{procdefid,jdbcType=VARCHAR}, 
+      #{proccategory,jdbcType=CHAR}, #{version,jdbcType=VARCHAR}, #{prockey,jdbcType=VARCHAR}, 
+      #{note,jdbcType=VARCHAR}, #{createdate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.gec.domain.ProcessConfig">
+    insert into t_proc_config
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="deplomentid != null">
+        deplomentId,
+      </if>
+      <if test="procdefid != null">
+        procDefId,
+      </if>
+      <if test="proccategory != null">
+        procCategory,
+      </if>
+      <if test="version != null">
+        version,
+      </if>
+      <if test="prockey != null">
+        procKey,
+      </if>
+      <if test="note != null">
+        note,
+      </if>
+      <if test="createdate != null">
+        createDate,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="deplomentid != null">
+        #{deplomentid,jdbcType=VARCHAR},
+      </if>
+      <if test="procdefid != null">
+        #{procdefid,jdbcType=VARCHAR},
+      </if>
+      <if test="proccategory != null">
+        #{proccategory,jdbcType=CHAR},
+      </if>
+      <if test="version != null">
+        #{version,jdbcType=VARCHAR},
+      </if>
+      <if test="prockey != null">
+        #{prockey,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null">
+        #{note,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null">
+        #{createdate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.gec.domain.ProcessConfigExample" resultType="java.lang.Long">
+    select count(*) from t_proc_config
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update t_proc_config
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=VARCHAR},
+      </if>
+      <if test="record.deplomentid != null">
+        deplomentId = #{record.deplomentid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.procdefid != null">
+        procDefId = #{record.procdefid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.proccategory != null">
+        procCategory = #{record.proccategory,jdbcType=CHAR},
+      </if>
+      <if test="record.version != null">
+        version = #{record.version,jdbcType=VARCHAR},
+      </if>
+      <if test="record.prockey != null">
+        procKey = #{record.prockey,jdbcType=VARCHAR},
+      </if>
+      <if test="record.note != null">
+        note = #{record.note,jdbcType=VARCHAR},
+      </if>
+      <if test="record.createdate != null">
+        createDate = #{record.createdate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update t_proc_config
+    set id = #{record.id,jdbcType=VARCHAR},
+      deplomentId = #{record.deplomentid,jdbcType=VARCHAR},
+      procDefId = #{record.procdefid,jdbcType=VARCHAR},
+      procCategory = #{record.proccategory,jdbcType=CHAR},
+      version = #{record.version,jdbcType=VARCHAR},
+      procKey = #{record.prockey,jdbcType=VARCHAR},
+      note = #{record.note,jdbcType=VARCHAR},
+      createDate = #{record.createdate,jdbcType=TIMESTAMP}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.gec.domain.ProcessConfig">
+    update t_proc_config
+    <set>
+      <if test="deplomentid != null">
+        deplomentId = #{deplomentid,jdbcType=VARCHAR},
+      </if>
+      <if test="procdefid != null">
+        procDefId = #{procdefid,jdbcType=VARCHAR},
+      </if>
+      <if test="proccategory != null">
+        procCategory = #{proccategory,jdbcType=CHAR},
+      </if>
+      <if test="version != null">
+        version = #{version,jdbcType=VARCHAR},
+      </if>
+      <if test="prockey != null">
+        procKey = #{prockey,jdbcType=VARCHAR},
+      </if>
+      <if test="note != null">
+        note = #{note,jdbcType=VARCHAR},
+      </if>
+      <if test="createdate != null">
+        createDate = #{createdate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.gec.domain.ProcessConfig">
+    update t_proc_config
+    set deplomentId = #{deplomentid,jdbcType=VARCHAR},
+      procDefId = #{procdefid,jdbcType=VARCHAR},
+      procCategory = #{proccategory,jdbcType=CHAR},
+      version = #{version,jdbcType=VARCHAR},
+      procKey = #{prockey,jdbcType=VARCHAR},
+      note = #{note,jdbcType=VARCHAR},
+      createDate = #{createdate,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

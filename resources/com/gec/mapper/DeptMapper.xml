@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gec.mapper.DeptMapper">
+	
+	<!-- 获取部门领导ID -->
+	<select id="findDeptLeaderId" resultType="string">
+		select ur.user_id
+		from user_role ur
+		left join user u on u.id=ur.user_id
+		left join role r on r.id=ur.role_id
+		where u.deptId=#{deptId}
+		and r.roleName = 'leader'
+	</select>
+	
+	<!-- 获取部门经理ID -->
+	<select id="findDeptManagerId" resultType="string">
+		select ur.user_id
+		from user_role ur
+		left join user u on u.id=ur.user_id
+		left join role r on r.id=ur.role_id
+		where u.deptId=#{deptId}
+		and r.roleName = 'manager'
+	</select>
+	
+	<!-- 获取上级部门的ID -->
+	<select id="findHignerLevelDept" resultType="string">
+		select d.parentId from dept d
+		where d.id=#{deptId}
+	</select>
+	
+	<select id="queryChildDeptList" resultType="Dept">
+		select d.* from dept d
+		where d.id!=#{id} and d.parentId=#{id}
+	</select>
+	
+	<select id="queryDeptOptions" resultType="Option">
+		select d.id val, d.deptName text
+		 from dept d
+		 <where>
+			<if test="id!=null and id!='' ">
+				and d.id != #{id}
+			</if>
+		</where>
+	</select>
+	
+
+	<select id="queryDeptList" resultType="Dept">
+		SELECT d1.*,IFNULL(d2.deptName,'top') parentName
+		FROM `dept` d1
+		left join `dept` d2 on d1.parentId=d2.id
+		<where>
+			<if test="data.id!=null and data.id!='' ">
+				and d1.id = #{data.id}
+			</if>
+			<if test="data.parentId!=null and data.parentId!='' ">
+				and d1.parentId = #{data.parentId}
+			</if>
+			<if test="data.deptName!=null and data.deptName!='' ">
+				and d1.deptName like "%"#{data.deptName}"%"
+			</if>
+		</where>
+	<!-- 	limit #{offset},#{limit} -->
+	</select>
+	
+	<select id="queryDeptCount" parameterType="java.util.Map" resultType="int">
+		select count(*) from dept d
+		<where>
+			<if test="data.id!=null and data.id!='' ">
+				and d.id = #{data.id}
+			</if>
+			<if test="data.parentId!=null and data.parentId!='' ">
+				and d.parentId = #{data.parentId}
+			</if>
+			<if test="data.deptName!=null and data.deptName!='' ">
+				and d.deptName like '%${data.deptName}%'
+			</if>
+		</where>
+	</select>
+	
+	<select id="queryMaxId" resultType="string">
+		SELECT MAX(id) FROM dept
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+  <resultMap id="BaseResultMap" type="com.gec.domain.Dept">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="parentId" jdbcType="VARCHAR" property="parentid" />
+    <result column="pids" jdbcType="VARCHAR" property="pids" />
+    <result column="deptName" jdbcType="VARCHAR" property="deptname" />
+    <result column="deptDesc" jdbcType="VARCHAR" property="deptdesc" />
+    <result column="hasSub" jdbcType="VARCHAR" property="hassub" />
+    <result column="level" jdbcType="VARCHAR" property="level" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, parentId, pids, deptName, deptDesc, hasSub, level
+  </sql>
+  <select id="selectByExample" parameterType="com.gec.domain.DeptExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from dept
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from dept
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from dept
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.gec.domain.DeptExample">
+    delete from dept
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.gec.domain.Dept">
+    insert into dept (id, parentId, pids, 
+      deptName, deptDesc, hasSub, 
+      level)
+    values (#{id,jdbcType=VARCHAR}, #{parentid,jdbcType=VARCHAR}, #{pids,jdbcType=VARCHAR}, 
+      #{deptname,jdbcType=VARCHAR}, #{deptdesc,jdbcType=VARCHAR}, #{hassub,jdbcType=VARCHAR}, 
+      #{level,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.gec.domain.Dept">
+    insert into dept
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="parentid != null">
+        parentId,
+      </if>
+      <if test="pids != null">
+        pids,
+      </if>
+      <if test="deptname != null">
+        deptName,
+      </if>
+      <if test="deptdesc != null">
+        deptDesc,
+      </if>
+      <if test="hassub != null">
+        hasSub,
+      </if>
+      <if test="level != null">
+        level,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="parentid != null">
+        #{parentid,jdbcType=VARCHAR},
+      </if>
+      <if test="pids != null">
+        #{pids,jdbcType=VARCHAR},
+      </if>
+      <if test="deptname != null">
+        #{deptname,jdbcType=VARCHAR},
+      </if>
+      <if test="deptdesc != null">
+        #{deptdesc,jdbcType=VARCHAR},
+      </if>
+      <if test="hassub != null">
+        #{hassub,jdbcType=VARCHAR},
+      </if>
+      <if test="level != null">
+        #{level,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.gec.domain.DeptExample" resultType="java.lang.Long">
+    select count(*) from dept
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update dept
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=VARCHAR},
+      </if>
+      <if test="record.parentid != null">
+        parentId = #{record.parentid,jdbcType=VARCHAR},
+      </if>
+      <if test="record.pids != null">
+        pids = #{record.pids,jdbcType=VARCHAR},
+      </if>
+      <if test="record.deptname != null">
+        deptName = #{record.deptname,jdbcType=VARCHAR},
+      </if>
+      <if test="record.deptdesc != null">
+        deptDesc = #{record.deptdesc,jdbcType=VARCHAR},
+      </if>
+      <if test="record.hassub != null">
+        hasSub = #{record.hassub,jdbcType=VARCHAR},
+      </if>
+      <if test="record.level != null">
+        level = #{record.level,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update dept
+    set id = #{record.id,jdbcType=VARCHAR},
+      parentId = #{record.parentid,jdbcType=VARCHAR},
+      pids = #{record.pids,jdbcType=VARCHAR},
+      deptName = #{record.deptname,jdbcType=VARCHAR},
+      deptDesc = #{record.deptdesc,jdbcType=VARCHAR},
+      hasSub = #{record.hassub,jdbcType=VARCHAR},
+      level = #{record.level,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.gec.domain.Dept">
+    update dept
+    <set>
+      <if test="parentid != null">
+        parentId = #{parentid,jdbcType=VARCHAR},
+      </if>
+      <if test="pids != null">
+        pids = #{pids,jdbcType=VARCHAR},
+      </if>
+      <if test="deptname != null">
+        deptName = #{deptname,jdbcType=VARCHAR},
+      </if>
+      <if test="deptdesc != null">
+        deptDesc = #{deptdesc,jdbcType=VARCHAR},
+      </if>
+      <if test="hassub != null">
+        hasSub = #{hassub,jdbcType=VARCHAR},
+      </if>
+      <if test="level != null">
+        level = #{level,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.gec.domain.Dept">
+    update dept
+    set parentId = #{parentid,jdbcType=VARCHAR},
+      pids = #{pids,jdbcType=VARCHAR},
+      deptName = #{deptname,jdbcType=VARCHAR},
+      deptDesc = #{deptdesc,jdbcType=VARCHAR},
+      hasSub = #{hassub,jdbcType=VARCHAR},
+      level = #{level,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

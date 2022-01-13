@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+        
+	<context:component-scan base-package="com.gec.controller"/>
+	
+	<!-- {2}设置 MVC 注解驱动
+		如果, 在上包中扫描到有类标识有控制器或映射相关的注解项,
+		就会将其设置为一个控制器。
+	 -->
+	 <!-- 装配自定义的类型转换器 -->
+	<mvc:annotation-driven conversion-service="convertService"/>
+	
+	<bean id="convertService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+		<property name="converters">
+			<set>
+				<bean class="com.gec.converters.UserConverter"/>
+				<bean class="com.gec.converters.DateToStringConverter"/>
+			</set>
+		</property>
+	</bean>
+	<!-- 对进入DispatcherServlet的URL进行筛查，
+		如果发现是静态资源的请求，就将该请求转由Web应用服务器默认的Servlet处理，
+		如果不是静态资源的请求，才由DispatcherServlet继续处理 -->
+	<!--  <mvc:default-servlet-handler/> -->
+	
+	<!--通过映射到指定的任意位置查找资源-->	
+	<!--<mvc:resources location="/static/" mapping="/static/**"/>-->	
+		
+	<!-- 配置视图解析器 -->
+	<bean id="internalResourceViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/jsp/"/>
+		<property name="suffix" value=".jsp"/>
+	</bean>
+	
+	<!-- 
+		文件上传解析器 
+		字符编码、最大上传大小、临时目录
+	-->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="DefaultEncoding" value="UTF-8"/>
+		<property name="MaxUploadSize" value="62914560"/>
+		<property name="UploadTempDir" value="/temp"/>
+	</bean>
+	
+	<!-- 拦截器 -->
+	<!-- <mvc:interceptors>
+		<mvc:interceptor>
+			这个是要拦截的地址
+			<mvc:mapping path="/Merchan/*"/>
+			这个是要排除的地址
+			<mvc:exclude-mapping path="/User/login"/>
+			<bean class="com.gec.intercepters.LoginIntercepter"/>
+		</mvc:interceptor>
+	</mvc:interceptors> -->
+</beans>
+
+

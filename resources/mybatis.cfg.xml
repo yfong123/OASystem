@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<settings>
+		<setting name="lazyLoadingEnabled" value="true"/>
+	    <!--配置侵入式延迟加载   默认为false（深度加载）
+		      侵入式：默认只会执行主加载SQL，那么当访问主加载对象的详细信息时才会执行关联对象的SQL查询
+		      深度延迟：默认只执行主加载SQL，那么当调用到主加载对象中关联对象的信息时才会执行关联对象的SQL查询
+	    -->
+    	<setting name="aggressiveLazyLoading" value="false"/>
+    	
+    	<!-- 开启二级缓存的支持 默认开启，可以不设置--> 
+    	<setting name="cacheEnabled" value="true"/>
+	</settings>
+	
+	<typeAliases>
+		<!-- <typeAlias type="com.gec.domain.User" alias="User"/> -->
+		<package name="com.gec.domain"/>
+	</typeAliases>
+ 
+	<!-- 分页插件 -->
+	<plugins>
+		<plugin interceptor="com.github.pagehelper.PageHelper">
+			<property name="dialect" value="mysql" />
+			<property name="offsetAsPageNum" value="false" />
+			<property name="rowBoundsWithCount" value="false" />
+			<property name="pageSizeZero" value="true" />
+			<property name="reasonable" value="false" />
+			<property name="supportMethodsArguments" value="false" />
+			<property name="returnPageInfo" value="none" />
+		</plugin>
+	</plugins>
+	
+</configuration>

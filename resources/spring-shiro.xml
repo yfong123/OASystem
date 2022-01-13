@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- {01}EhCacheManager 缓存管理器
+		    [a]缓存管理器配置文件 {属性1}
+		       (关联与加载配置文件之用)
+	 -->
+	 <bean id="EhCacheManager"
+	 	class="org.apache.shiro.cache.ehcache.EhCacheManager">
+	 	<property name="cacheManagerConfigFile" 
+	 		value="classpath:ehcache.xml" />
+	 </bean>
+	
+	<!-- {02}默认Web安全管理器
+		DefaultWebSecurityManager
+		[a]****** {属性1}
+		   (引用上面的缓存管理器)
+		[b]realm  {属性2}
+		  (如果有用到自定义的 Realm, 设置此项)
+	 -->
+	 <bean id="securityManager"
+	 	class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+	 	<property name="cacheManager" ref="EhCacheManager" />
+	 	<!-- 配置  Realm  -->
+	 	<property name="realm" ref="MyRealm"/>
+	 </bean>
+	
+	 <!-- {03}ShiroFilterFactoryBean
+	      [1]id: 与 web.xml 中的过滤器名称相同()
+	         (即: shiroFilter)
+	  -->
+	  <bean id="shiroFilter"
+	  	class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+	  	<!-- [1]安全管理器  ref="上面的安全管理器"。 -->
+	  	<property name="securityManager" ref="securityManager" />
+	  	
+	  	<!-- [2]loginUrl: 用户没有登录时, 你现在访问需要
+	  	                 用户登录的页面, 它会自动跳转到这个地址。 -->
+	  	<property name="loginUrl" value="/User/showLogin?msg=NotLoggedIn" />
+	  	
+	  	<!-- [3]successUrl: 登录之后, 自动来到这里。  -->
+	  	<property name="successUrl" value="/User/index" />
+	  	
+	  	<!-- [4]unauthorizedUrl: 当用户访问需要权限的资源时, 
+	  	                 你现在没有这个权限, 它会自动跳转到这个地址。  -->
+	  	<property name="unauthorizedUrl" 
+	  				value="/error.jsp" />
+
+	  	<!--
+	  		 [5]过滤器链定义 FilterChainDefinitions 
+	  		anno，任何人都可以访问；
+	  		authc：必须是登录之后才能进行访问，不包括remember me；
+	  		user：登录用户才可以访问，包含remember me；
+	  		perms：指定过滤规则，这个一般是扩展使用，不会使用原生的
+	  		从上到下，从左到右，如果有匹配的拦截器就会阻断并返回
+	  	-->
+	  	<property name="FilterChainDefinitionMap" ref="filterChainDefinitionMap"/>
+	  	
+	  	<!-- [6]注册自定义的过滤器:filters  -->
+	  </bean>
+	
+	<!-- {04}MyRealm{自定义} -->
+	<bean id="MyRealm" class="com.gec.realms.MyAuthorizingRealm" />
+	<!-- {05}过滤器 {自定义} -->
+	
+	<!-- {06}设置一个工厂Bean，产生过滤器链的数据  -->
+	<bean id="filterDataFactory" class="com.gec.shiro.FilterDataFactory">
+		<property name="AnonymousFilter">
+			<value>
+				/User/showLogin = anon
+				/User/login = anon
+				/Leave/** = anon
+				/Expense/** = anon
+				/static/** = anon
+			</value>
+		</property>
+	</bean>
+
+	<bean id="filterChainDefinitionMap" class="java.util.Map"
+		factory-bean="filterDataFactory" factory-method="getFilterDefinitions"/>
+</beans>
